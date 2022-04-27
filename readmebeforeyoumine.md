@@ -9,4 +9,4 @@ Once You Have Installed All Repos Then Run This Command:
 ## Note that the python version should be atleast 3.9 if its older it wont work  
 And You Are Now Promted To Put Your SiriCoin Address Copy and Paste It Then Hit Enter And Your PC is Now Mining.  
   
-OFFICIAL PC MINER BY SIRIDEVS FROM SIRICOIN..   
+- Red Eye.

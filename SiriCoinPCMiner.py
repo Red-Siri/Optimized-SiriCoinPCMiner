@@ -1,8 +1,13 @@
-import hashlib, time, importlib, json
+import time, json, sha3, sys, os, termcolor, requests
 from web3.auto import w3
-from eth_account.account import Account
 from eth_account.messages import encode_defunct
-from colorama import Fore
+
+MainNET = "https://siricoin-node-1.dynamic-dns.net:5005"
+ShreyasNET = "http://138.197.181.206:5005"
+TimeOUT = 1.75
+
+if os.name == 'nt': os.system('color')
+
 
 class SignatureManager(object):
     def __init__(self):
@@ -11,7 +16,7 @@ class SignatureManager(object):
     
     def signTransaction(self, private_key, transaction):
         message = encode_defunct(text=transaction["data"])
-        transaction["hash"] = w3.soliditySha3(["string"], [transaction["data"]]).hex()
+        transaction["hash"] = sha3.sha3_256(transaction["data"].encode("utf-8")).hexdigest()
         _signature = w3.eth.account.sign_message(message, private_key=private_key).signature.hex()
         signer = w3.eth.account.recover_message(message, signature=_signature)
         sender = w3.toChecksumAddress(json.loads(transaction["data"])["from"])
@@ -19,104 +24,129 @@ class SignatureManager(object):
             transaction["sig"] = _signature
             self.signed += 1
         return transaction
-        
-    def verifyTransaction(self, transaction):
-        message = encode_defunct(text=transaction["data"])
-        _hash = w3.soliditySha3(["string"], [transaction["data"]]).hex()
-        _hashInTransaction = transaction["hash"]
-        signer = w3.eth.account.recover_message(message, signature=transaction["sig"])
-        sender = w3.toChecksumAddress(json.loads(transaction["data"])["from"])
-        result = ((signer == sender) and (_hash == _hashInTransaction))
-        self.verified += int(result)
-        return result
 
 class SiriCoinMiner(object):
     def __init__(self, NodeAddr, RewardsRecipient):
-        # self.chain = BeaconChain()
-        self.requests = importlib.import_module("requests")
-        
         self.node = NodeAddr
         self.signer = SignatureManager()
         self.difficulty = 1
         self.target = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
         self.lastBlock = ""
         self.rewardsRecipient = w3.toChecksumAddress(RewardsRecipient)
-        self.priv_key = w3.solidityKeccak(["string", "address"], ["SiriCoin Will go to MOON - Just a disposable key", self.rewardsRecipient])
+        self.priv_key = w3.solidityKeccak(["string", "address"], ["SiriCoin Will go to M00N - Just a disposable key", self.rewardsRecipient])
 
         self.nonce = 0
         self.acct = w3.eth.account.from_key(self.priv_key)
         self.messages = b"null"
         
         self.timestamp = time.time()
-        _txs = self.requests.get(f"{self.node}/accounts/accountInfo/{self.acct.address}").json().get("result").get("transactions")
+        _txs = requests.get(f"{self.node}/accounts/accountInfo/{self.acct.address}").json().get("result").get("transactions")
         self.lastSentTx = _txs[len(_txs)-1]
         self.refresh()
     
     def refresh(self):
-        info = self.requests.get(f"{self.node}/chain/miningInfo").json().get("result")
+        info = requests.get(f"{self.node}/chain/miningInfo").json().get("result")
         self.target = info["target"]
         self.difficulty = info["difficulty"]
         self.lastBlock = info["lastBlockHash"]
-        _txs = self.requests.get(f"{self.node}/accounts/accountInfo/{self.acct.address}").json().get("result").get("transactions")
+        _txs = requests.get(f"{self.node}/accounts/accountInfo/{self.acct.address}").json().get("result").get("transactions")
         self.lastSentTx = _txs[len(_txs)-1]
         self.timestamp = time.time()
         self.nonce = 0
     
     def submitBlock(self, blockData):
-        data = json.dumps({"from": self.acct.address, "to": self.acct.address, "tokens": 0, "parent": self.lastSentTx, "blockData": blockData, "epoch": self.lastBlock, "type": 1})
-        tx = {"data": data}
-        tx = self.signer.signTransaction(self.priv_key, tx)
+        tx = self.signer.signTransaction(self.priv_key, {"data": json.dumps({"from": self.acct.address, "to": self.acct.address, "tokens": 0, "parent": self.lastSentTx, "blockData": blockData, "epoch": self.lastBlock, "type": 1})})
         self.refresh()
-#        print(tx)
-        txid = self.requests.get(f"{self.node}/send/rawtransaction/?tx={json.dumps(tx).encode().hex()}").json().get("result")[0]
-        print(f"SYS {Fore.GREEN}Mined block {blockData['miningData']['proof']}, submitted in transaction {txid}")
-        return txid
+        _tx = (f"{self.node}/send/rawtransaction/?tx={json.dumps(tx).encode().hex()}")
+        try:
+            txid = requests.get(_tx).json().get("result")[0]
+            print(termcolor.colored(f"Mined block {blockData['miningData']['proof']}, submitted in transaction {txid}", "green"))
+            global first_root
+            first_root = False
+            miner.startMining()
+        except:
+            print(termcolor.colored("Oops, failed subminting the block, wait till mainnet is back up and enter in this URL in your browser, ignore the output, just do it ;D \n", "red"))
+            print(termcolor.colored(str(f"https://siricoin-node-1.dynamic-dns.net:5005/send/rawtransaction/?tx={json.dumps(tx).encode().hex()} \n", "cyan")))
+            sys.exit()
+            
 
 
 
 
     def beaconRoot(self):
-        messagesHash = w3.keccak(self.messages)
-        bRoot = w3.soliditySha3(["bytes32", "uint256", "bytes32","address"], [self.lastBlock, int(self.timestamp), messagesHash, self.rewardsRecipient]) # parent PoW hash (bytes32), beacon's timestamp (uint256), hash of messages (bytes32), beacon miner (address)
-        return bRoot.hex()
+        messagesHash = sha3.keccak_256(self.messages).digest()
+        bRoot = "0x" + sha3.keccak_256((b"".join([bytes.fromhex(self.lastBlock.replace("0x", "")), int(self.timestamp).to_bytes(32, 'big'), messagesHash, bytes.fromhex(self.rewardsRecipient.replace("0x", "")) ]))).hexdigest() # parent PoW hash (bytes32), beacon's timestamp (uint256), hash of messages (bytes32), beacon miner (address)
+        return bRoot
 
     def proofOfWork(self, bRoot, nonce):
-#        print(f"Beacon root : {bRoot}")
-        proof = w3.solidityKeccak(["bytes32", "uint256"], [bRoot, int(nonce)])
-        return proof.hex()
+        proof = sha3.keccak_256((b"".join([bytes.fromhex(bRoot.replace("0x", "")),nonce.to_bytes(32, 'big')]))).hexdigest()
+        return proof
 
     def formatHashrate(self, hashrate):
         if hashrate < 1000:
-            return f"{round(hashrate, 2)}H/s"
+            # H's
+            if len(str(round(hashrate, 2)).split('.', 1)[1]) == 1: return str(round(hashrate/1000, 2)) + "0 H/s" 
+            else: return str(round(hashrate/1000, 2)) + " H/s"
         elif hashrate < 1000000:
-            return f"{round(hashrate/1000, 2)}kH/s"
+            # KH's
+            if len(str(round(hashrate/1000, 2)).split('.', 1)[1]) == 1: return str(round(hashrate/1000, 2)) + "0 KH/s" 
+            else: return str(round(hashrate/1000, 2)) + " KH/s"
         elif hashrate < 1000000000:
-            return f"{round(hashrate/1000000, 2)}MH/s"
+            # MH's
+            if len(str(round(hashrate/1000000, 2)).split('.', 1)[1]) == 1: return str(round(hashrate/1000, 2)) + "0 MH/s" 
+            else: return str(round(hashrate/1000, 2)) + " MH/s"
         elif hashrate < 1000000000000:
-            return f"{round(hashrate/1000000000, 2)}GH/s"
+            # GH's
+            if len(str(round(hashrate/1000000000, 2)).split('.', 1)[1]) == 1: return str(round(hashrate/1000, 2)) + "0 GH/s" 
+            else: return str(round(hashrate/1000, 2)) + " GH/s"
+        
             
             
     def startMining(self):
         self.refresh()
-        print(f"SYS {Fore.GREEN}Started mining for {self.rewardsRecipient}")
+        global first_run, bRoot
+        if first_run: print(termcolor.colored(f"Started mining for {self.rewardsRecipient} on {the_node}", "yellow"))
         proof = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
         while True:
             self.refresh()
             bRoot = self.beaconRoot()
+            first_run = False
             while (time.time() - self.timestamp) < 30:
                 self.nonce += 1
                 proof = self.proofOfWork(bRoot, self.nonce)
                 if (int(proof, 16) < int(self.target, 16)):
-                    self.submitBlock({"miningData" : {"miner": self.rewardsRecipient,"nonce": self.nonce,"difficulty": self.difficulty,"miningTarget": self.target,"proof": proof}, "parent": self.lastBlock,"messages": self.messages.hex(), "timestamp": self.timestamp, "son": "0000000000000000000000000000000000000000000000000000000000000000"})
-            print(f"SYS {Fore.YELLOW}Last 30 seconds hashrate : {self.formatHashrate((self.nonce / 30))}")
+                    rawTX = ({"miningData" : {"miner": self.rewardsRecipient,"nonce": self.nonce,"difficulty": self.difficulty,"miningTarget": self.target,"proof": proof}, "parent": self.lastBlock,"messages": self.messages.hex(), "timestamp": self.timestamp, "son": "0000000000000000000000000000000000000000000000000000000000000000"})
+                    self.submitBlock(rawTX)
+            print(termcolor.colored("Last 30 seconds hashrate : " + self.formatHashrate((self.nonce / 30)), "yellow"))
 
 
-# class SiriCoinMiner(object):
-    # def __init__(self, minerAddress):
-        # self.miner = minerAddress
-        # self.lastblockhash = ""
-        # self.miningTarget
 if __name__ == "__main__":
-    minerAddr = input("Enter your SiriCoin address : ")
-    miner = SiriCoinMiner("https://siricoin-node-1.dynamic-dns.net:5005/", minerAddr)
-    miner.startMining()
+    first_run = True
+    first_root = True
+    minerAddr = input(termcolor.colored("Enter your SiriCoin address : ", 'magenta'))
+    try:
+        if requests.get(f"{MainNET}/chain/block/1", timeout=TimeOUT).json()["result"]["height"] == 1:
+            the_node = "main-net"
+            miner = SiriCoinMiner(MainNET, minerAddr)
+            miner.startMining()
+            Continue_To_Shreyas_net = False
+    except requests.ConnectTimeout:
+        Continue_To_Shreyas_net = True
+
+    try:
+        if Continue_To_Shreyas_net and requests.get(f"{ShreyasNET}/chain/block/1", timeout=TimeOUT).json()["result"]["height"] == 1:
+            print(termcolor.colored("Whoops! The main-net is offline, you can try mining on the Shreyas-net, but it's not recommended as it's not designed to mine, if you hit a block the balance won't move over to main-net.", "red"))
+            on_ShreyasNET = input(termcolor.colored("Are you sure you wan't to continue? Y/n \n", "magenta"))
+            if on_ShreyasNET.lower() == "y":
+                the_node = "Shreyas-net"
+                miner = SiriCoinMiner(ShreyasNET, minerAddr)
+                miner.startMining()
+            if on_ShreyasNET.lower() == "n":
+                print(termcolor.colored("Ok, quitting the miner, goodbye!", "red"))
+                sys.exit()
+            
+    except requests.ConnectTimeout:
+        print(termcolor.colored("Both Shreyas-net and main-net are down, quitting the miner, goodbye!", "red"))
+        sys.exit()
+    
+        
