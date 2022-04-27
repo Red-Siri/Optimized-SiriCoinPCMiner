@@ -1,9 +1,29 @@
-# SiriCoinPCMiner
-Official SiriCoin PCMiner by SiriDevs
+# SiriCoinPCMiner  
+Optimized Siri-coin PC miner reaching 300 KH/s or more!  
 
-# Note
-For this to work you have to install web3 module. In linux you need to have Python3.9 if it gives you an error you will need python3.9 dev version. and in windows you will need python3.9 minimum and latest version of Microsoft C++ Build tools Follow [This](https://docs.siricoin.tech/how-to-mine-siri-using-pcminer) guide if you want to mine on windows
+# Setup  
 
-# Webminer
-You can find the webminer [here](https://siricoin.tech/#webminer)
-Also [This](https://youtu.be/ZQ0OoXzo_x0) is the video guide on how to mine SiriCoin on webminer
+## Windows:  
+Go over to releases and download the exe, it's as fast as the python script ;)  
+
+## Linux:  
+
+You have two options:  
+
+a) Download the pre-compiled binary (Slower)  
+then run chmod +x SiriCoinPCMiner  
+To run: ./SiriCoinPCMiner  
+
+b) Install python 3 and run it using the script (faster)  
+
+```
+sudo apt update
+sudo apt install software-properties-common
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt update
+sudo apt install python3.9
+python3 SiriCoinPCMiner.py
+```
+
+Happy mining! Feel free to fork and submit issues!
+
