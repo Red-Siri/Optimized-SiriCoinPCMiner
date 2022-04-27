@@ -1,5 +1,5 @@
 # SiriCoinPCMiner  
-Optimized Siri-coin PC miner reaching 300 KH/s or more!  
+Optimized Siri-Coin PC miner reaching 300 KH/s or more!  
 
 # Setup  
 
@@ -22,6 +22,7 @@ sudo apt install software-properties-common
 sudo add-apt-repository ppa:deadsnakes/ppa
 sudo apt update
 sudo apt install python3.9
+pip3 install -r requirements.txt
 python3 SiriCoinPCMiner.py
 ```
 
