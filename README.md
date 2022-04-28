@@ -1,4 +1,6 @@
 # Deprecated SiriCoinPCMiner (DO NOT USE, PPL HAVE BEEN COMPLAINING IT DOESN'T WORK, IT WORKS FOR ME SO I CAN'T FIX IT)
+![under construction](http://www.candivore.io/img/about/construction_8.gif) 
+
 Optimized Siri-Coin PC miner reaching 300 KH/s or more!  
 
 # Setup  
