@@ -1,4 +1,4 @@
-# SiriCoinPCMiner  
+# SiriCoinPCMiner (DO NOT USE, PPL HAVE BEEN COMPLAINING IT DOESN'T WORK, IT WORKS FOR ME SO I CAN'T FIX IT)
 Optimized Siri-Coin PC miner reaching 300 KH/s or more!  
 
 # Setup  
