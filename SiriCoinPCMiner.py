@@ -123,6 +123,7 @@ class SiriCoinMiner(object):
 if __name__ == "__main__":
     first_run = True
     first_root = True
+    print(termcolor.colored("This miner is broken, please use Ridimuims, if you wish to continue - do", 'red'))
     minerAddr = input(termcolor.colored("Enter your SiriCoin address : ", 'magenta'))
     try:
         if requests.get(f"{MainNET}/chain/block/1", timeout=TimeOUT).json()["result"]["height"] == 1:
