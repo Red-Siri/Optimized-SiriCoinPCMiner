@@ -1,7 +1,5 @@
-# Deprecated SiriCoinPCMiner
-Why deprecated? Simply because there's a [better one](https://github.com/alberiolima/siriCoin) out there made by @alberiolima
-
-Optimized Siri-Coin PC miner reaching 300 KH/s or more!  
+# Optimized Siricoin PC Miner
+Optimized Siricoin PC miner reaching 300 KH/s or more!  
 
 # Setup  
 
