@@ -1,10 +1,13 @@
-import time, json, sha3, sys, os, termcolor, requests
+import time, json, sha3, sys, os, termcolor, requests, cpuinfo
 from web3.auto import w3
 from eth_account.messages import encode_defunct
 
-MainNET = "https://siricoin-node-1.dynamic-dns.net:5005"
+
+MainNET = "https://node-1.siricoin.tech:5006"
 ShreyasNET = "http://138.197.181.206:5005"
-TimeOUT = 1.75
+JunaidNET = 'http://47.250.59.81:5005'
+
+TimeOUT = 1
 
 if os.name == 'nt': os.system('color')
 
@@ -16,7 +19,7 @@ class SignatureManager(object):
     
     def signTransaction(self, private_key, transaction):
         message = encode_defunct(text=transaction["data"])
-        transaction["hash"] = sha3.sha3_256(transaction["data"].encode("utf-8")).hexdigest()
+        transaction["hash"] = w3.soliditySha3(["string"], [transaction["data"]]).hex()
         _signature = w3.eth.account.sign_message(message, private_key=private_key).signature.hex()
         signer = w3.eth.account.recover_message(message, signature=_signature)
         sender = w3.toChecksumAddress(json.loads(transaction["data"])["from"])
@@ -57,16 +60,16 @@ class SiriCoinMiner(object):
     def submitBlock(self, blockData):
         tx = self.signer.signTransaction(self.priv_key, {"data": json.dumps({"from": self.acct.address, "to": self.acct.address, "tokens": 0, "parent": self.lastSentTx, "blockData": blockData, "epoch": self.lastBlock, "type": 1})})
         self.refresh()
-        _tx = (f"{self.node}/send/rawtransaction/?tx={json.dumps(tx).encode().hex()}")
         try:
-            txid = requests.get(_tx).json().get("result")[0]
-            print(termcolor.colored(f"Mined block {blockData['miningData']['proof']}, submitted in transaction {txid}", "green"))
+            txid = requests.get(f"{self.node}/send/rawtransaction/?tx={json.dumps(tx).encode().hex()}").json().get("result")[0]
+            print(termcolor.colored(f"Mined block {blockData['miningData']['proof']},\nsubmitted in transaction {txid}", "green"))
+            print(termcolor.colored("Current Network Balance : " + str(requests.get(f"{self.node}/accounts/accountBalance/{self.rewardsRecipient}").json()["result"]["balance"]) + " Siri", "green")) # code by luketherock868
             global first_root
             first_root = False
             miner.startMining()
         except:
             print(termcolor.colored("Oops, failed subminting the block, wait till mainnet is back up and enter in this URL in your browser, ignore the output, just do it ;D \n", "red"))
-            print(termcolor.colored(str(f"https://siricoin-node-1.dynamic-dns.net:5005/send/rawtransaction/?tx={json.dumps(tx).encode().hex()} \n", "cyan")))
+            print(termcolor.colored(str(f"https://siricoin-node-1.dynamic-dns.net:5005/send/rawtransaction/?tx={json.dumps(tx).encode().hex()}", "cyan")))
             sys.exit()
             
 
@@ -80,7 +83,7 @@ class SiriCoinMiner(object):
 
     def proofOfWork(self, bRoot, nonce):
         proof = sha3.keccak_256((b"".join([bytes.fromhex(bRoot.replace("0x", "")),nonce.to_bytes(32, 'big')]))).hexdigest()
-        return proof
+        return "0x" + proof
 
     def formatHashrate(self, hashrate):
         if hashrate < 1000:
@@ -115,7 +118,7 @@ class SiriCoinMiner(object):
                 self.nonce += 1
                 proof = self.proofOfWork(bRoot, self.nonce)
                 if (int(proof, 16) < int(self.target, 16)):
-                    rawTX = ({"miningData" : {"miner": self.rewardsRecipient,"nonce": self.nonce,"difficulty": self.difficulty,"miningTarget": self.target,"proof": proof}, "parent": self.lastBlock,"messages": self.messages.hex(), "timestamp": self.timestamp, "son": "0000000000000000000000000000000000000000000000000000000000000000"})
+                    rawTX = ({"miningData" : {"miner": self.rewardsRecipient,"nonce": self.nonce,"difficulty": self.difficulty,"miningTarget": self.target,"proof": proof}, "parent": self.lastBlock,"messages": self.messages.hex(), "timestamp": int(self.timestamp), "son": "0000000000000000000000000000000000000000000000000000000000000000"})
                     self.submitBlock(rawTX)
             print(termcolor.colored("Last 30 seconds hashrate : " + self.formatHashrate((self.nonce / 30)), "yellow"))
 
@@ -123,19 +126,23 @@ class SiriCoinMiner(object):
 if __name__ == "__main__":
     first_run = True
     first_root = True
-    print(termcolor.colored("This miner is broken, please use Ridimuims, if you wish to continue - do", 'red'))
+    
+    print(termcolor.colored("CPU: " + cpuinfo.get_cpu_info()['brand_raw'] +" @ "+ cpuinfo.get_cpu_info()['hz_advertised_friendly'] + " (x"+str(cpuinfo.get_cpu_info()['count'])+")", "yellow")) # code by luketherock868
+    
     minerAddr = input(termcolor.colored("Enter your SiriCoin address : ", 'magenta'))
+        
     try:
-        if requests.get(f"{MainNET}/chain/block/1", timeout=TimeOUT).json()["result"]["height"] == 1:
-            the_node = "main-net"
+        if requests.get(f"{MainNET}/chain/block/2", timeout=TimeOUT).json()["result"]["height"] == 2:
+            the_node = "Main-net"
             miner = SiriCoinMiner(MainNET, minerAddr)
-            miner.startMining()
             Continue_To_Shreyas_net = False
+            miner.startMining()
     except requests.ConnectTimeout:
         Continue_To_Shreyas_net = True
-
+    
     try:
         if Continue_To_Shreyas_net and requests.get(f"{ShreyasNET}/chain/block/1", timeout=TimeOUT).json()["result"]["height"] == 1:
+            Continue_To_Junaid_net = False
             print(termcolor.colored("Whoops! The main-net is offline, you can try mining on the Shreyas-net, but it's not recommended as it's not designed to mine, if you hit a block the balance won't move over to main-net.", "red"))
             on_ShreyasNET = input(termcolor.colored("Are you sure you wan't to continue? Y/n \n", "magenta"))
             if on_ShreyasNET.lower() == "y":
@@ -147,7 +154,16 @@ if __name__ == "__main__":
                 sys.exit()
             
     except requests.ConnectTimeout:
-        print(termcolor.colored("Both Shreyas-net and main-net are down, quitting the miner, goodbye!", "red"))
+
+        Continue_To_Junaid_net = True
+
+    try:
+        if Continue_To_Junaid_net and requests.get(f"{JunaidNET}/chain/block/1", timeout=TimeOUT).json()["result"]["height"] == 1:
+            the_node = "Junaid-net"
+            miner = SiriCoinMiner(JunaidNET, minerAddr)
+            Continue_To_main_net = False
+            miner.startMining()
+    except requests.ConnectTimeout:
+        print(termcolor.colored("All networks are down, quitting the miner, goodbye!", "red"))
         sys.exit()
-    
         
