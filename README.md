@@ -26,5 +26,14 @@ pip3 install -r requirements.txt
 python3 SiriCoinPCMiner.py
 ```
 
+**Extra step on ARM:**  
+You have to run  
+```
+pip3 uninstall sha3
+pip3 install pysha3
+```
+before starting the miner!
+
+
 Happy mining! Feel free to fork and submit issues!
 
