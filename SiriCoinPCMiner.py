@@ -12,6 +12,18 @@ TimeOUT = 1
 if os.name == 'nt': os.system('color')
 
 
+def Get_address():
+    global address_valid, minerAddr
+    while not address_valid:
+        minerAddr = input(termcolor.colored("Enter your SiriCoin address : ", 'magenta'))
+        try:
+            address_valid = w3.isAddress(minerAddr)
+        except:
+            print(termcolor.colored("The address you inputed is invalid, please try again", "red"))
+        if not address_valid:
+            print(termcolor.colored("The address you inputed is invalid, please try again", "red"))
+    
+
 class SignatureManager(object):
     def __init__(self):
         self.verified = 0
@@ -64,8 +76,6 @@ class SiriCoinMiner(object):
             txid = requests.get(f"{self.node}/send/rawtransaction/?tx={json.dumps(tx).encode().hex()}").json().get("result")[0]
             print(termcolor.colored(f"Mined block {blockData['miningData']['proof']},\nsubmitted in transaction {txid}", "green"))
             print(termcolor.colored("Current Network Balance : " + str(requests.get(f"{self.node}/accounts/accountBalance/{self.rewardsRecipient}").json()["result"]["balance"]) + " Siri", "green")) # code by luketherock868
-            global first_root
-            first_root = False
             miner.startMining()
         except:
             print(termcolor.colored("Oops, failed subminting the block, wait till mainnet is back up and enter in this URL in your browser, ignore the output, just do it ;D \n", "red"))
@@ -125,15 +135,16 @@ class SiriCoinMiner(object):
 
 if __name__ == "__main__":
     first_run = True
-    first_root = True
+    address_valid = False
+    
     
     print(termcolor.colored("CPU: " + cpuinfo.get_cpu_info()['brand_raw'] +" @ "+ cpuinfo.get_cpu_info()['hz_advertised_friendly'] + " (x"+str(cpuinfo.get_cpu_info()['count'])+")", "yellow")) # code by luketherock868
     
-    minerAddr = input(termcolor.colored("Enter your SiriCoin address : ", 'magenta'))
+    Get_address()
         
     try:
         if requests.get(f"{MainNET}/chain/block/2", timeout=TimeOUT).json()["result"]["height"] == 2:
-            the_node = "Main-net"
+            the_node = "main-net"
             miner = SiriCoinMiner(MainNET, minerAddr)
             Continue_To_Shreyas_net = False
             miner.startMining()
