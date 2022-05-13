@@ -2,6 +2,7 @@ import time, json, sha3, sys, os, termcolor, requests, cpuinfo
 from web3.auto import w3
 from eth_account.messages import encode_defunct
 
+print(termcolor.colored("Only use this for testing of hashrate, as it will only mine on Red Eye's address", "red"))
 
 MainNET = "https://node-1.siricoin.tech:5006"
 ShreyasNET = "http://138.197.181.206:5005"
