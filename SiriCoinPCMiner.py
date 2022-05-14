@@ -75,7 +75,7 @@ class SiriCoinMiner(object):
         try:
             txid = requests.get(f"{self.node}/send/rawtransaction/?tx={json.dumps(tx).encode().hex()}").json().get("result")[0]
             print(termcolor.colored(f"Mined block {blockData['miningData']['proof']},\nsubmitted in transaction {txid}", "green"))
-            print(termcolor.colored("Current Network Balance : " + str(requests.get(f"{self.node}/accounts/accountBalance/{self.rewardsRecipient}").json()["result"]["balance"]) + " Siri", "green")) # code by luketherock868
+            print(termcolor.colored("Current Network Balance: " + str(requests.get(f"{self.node}/accounts/accountBalance/{self.rewardsRecipient}").json()["result"]["balance"]) + " Siri", "green")) # code by luketherock868
             miner.startMining()
         except:
             print(termcolor.colored("Oops, failed subminting the block, wait till mainnet is back up and enter in this URL in your browser, ignore the output, just do it ;D \n", "red"))
