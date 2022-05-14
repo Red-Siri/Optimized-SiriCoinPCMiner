@@ -138,11 +138,11 @@ if __name__ == "__main__":
     address_valid = False
     
     
-     print(termcolor.colored("---------------------------- System ----------------------------", "yellow"))
-     print(termcolor.colored("OS: " + platform.system() + " " + platform.release(), "yellow"))
-     print(termcolor.colored("CPU: " + cpuinfo.get_cpu_info()['brand_raw'] +" @ "+ cpuinfo.get_cpu_info()['hz_advertised_friendly'] + " (x"+str(cpuinfo.get_cpu_info()['count'])+")", "yellow"))
-     print(termcolor.colored("RAM: " + str(round(int(psutil.virtual_memory()[3]) / 1074000000, 2)) + " / " + str(round(float(psutil.virtual_memory()[0]) / 1074000000, 2)) + " GB", "yellow"))
-     print(termcolor.colored("----------------------------------------------------------------", "yellow")) # code by luketherock868
+    print(termcolor.colored("---------------------------- System ----------------------------", "yellow"))
+    print(termcolor.colored("OS: " + platform.system() + " " + platform.release(), "yellow"))
+    print(termcolor.colored("CPU: " + cpuinfo.get_cpu_info()['brand_raw'] +" @ "+ cpuinfo.get_cpu_info()['hz_advertised_friendly'] + " (x"+str(cpuinfo.get_cpu_info()['count'])+")", "yellow"))
+    print(termcolor.colored("RAM: " + str(round(int(psutil.virtual_memory()[3]) / 1074000000, 2)) + " / " + str(round(float(psutil.virtual_memory()[0]) / 1074000000, 2)) + " GB", "yellow"))
+    print(termcolor.colored("----------------------------------------------------------------", "yellow")) # code by luketherock868
     
     Get_address()
         
