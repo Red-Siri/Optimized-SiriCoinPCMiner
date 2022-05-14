@@ -1,4 +1,4 @@
-import time, json, sha3, sys, os, termcolor, requests, cpuinfo
+import time, json, sha3, sys, os, termcolor, requests, cpuinfo, platform, psutil
 from web3.auto import w3
 from eth_account.messages import encode_defunct
 
