@@ -5,3 +5,4 @@ requests
 sha3
 termcolor
 web3
+psutils
