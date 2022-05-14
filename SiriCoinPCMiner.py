@@ -15,7 +15,7 @@ if os.name == 'nt': os.system('color')
 def Get_address():
     global address_valid, minerAddr
     while not address_valid:
-        minerAddr = input(termcolor.colored("Enter your SiriCoin address : ", 'magenta'))
+        minerAddr = input(termcolor.colored("Enter your SiriCoin address: ", 'magenta'))
         try:
             address_valid = w3.isAddress(minerAddr)
         except:
@@ -130,7 +130,7 @@ class SiriCoinMiner(object):
                 if (int(proof, 16) < int(self.target, 16)):
                     rawTX = ({"miningData" : {"miner": self.rewardsRecipient,"nonce": self.nonce,"difficulty": self.difficulty,"miningTarget": self.target,"proof": proof}, "parent": self.lastBlock,"messages": self.messages.hex(), "timestamp": int(self.timestamp), "son": "0000000000000000000000000000000000000000000000000000000000000000"})
                     self.submitBlock(rawTX)
-            print(termcolor.colored("Last 30 seconds hashrate : " + self.formatHashrate((self.nonce / 30)), "yellow"))
+            print(termcolor.colored("Last 30 seconds hashrate: " + self.formatHashrate((self.nonce / 30)), "yellow"))
 
 
 if __name__ == "__main__":
@@ -138,7 +138,11 @@ if __name__ == "__main__":
     address_valid = False
     
     
-    print(termcolor.colored("CPU: " + cpuinfo.get_cpu_info()['brand_raw'] +" @ "+ cpuinfo.get_cpu_info()['hz_advertised_friendly'] + " (x"+str(cpuinfo.get_cpu_info()['count'])+")", "yellow")) # code by luketherock868
+     print(termcolor.colored("---------------------------- System ----------------------------", "yellow"))
+     print(termcolor.colored("OS: " + platform.system() + " " + platform.release(), "yellow"))
+     print(termcolor.colored("CPU: " + cpuinfo.get_cpu_info()['brand_raw'] +" @ "+ cpuinfo.get_cpu_info()['hz_advertised_friendly'] + " (x"+str(cpuinfo.get_cpu_info()['count'])+")", "yellow"))
+     print(termcolor.colored("RAM: " + str(round(int(psutil.virtual_memory()[3]) / 1074000000, 2)) + " / " + str(round(float(psutil.virtual_memory()[0]) / 1074000000, 2)) + " GB", "yellow"))
+     print(termcolor.colored("----------------------------------------------------------------", "yellow")) # code by luketherock868
     
     Get_address()
         
