@@ -2,7 +2,6 @@ eth_account
 py_cpuinfo
 pysha3
 requests
-sha3
 termcolor
 web3
 psutils
