@@ -4,4 +4,4 @@ pysha3
 requests
 termcolor
 web3
-psutils
+psutil
