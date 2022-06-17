@@ -1,7 +1,0 @@
-eth_account
-py_cpuinfo
-pysha3
-requests
-termcolor
-web3
-psutil
