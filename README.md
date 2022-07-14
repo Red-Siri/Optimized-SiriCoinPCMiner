@@ -1,6 +1,7 @@
 # Optimized Siricoin PC Miner
-Optimized Siricoin PC miner reaching 300 KH/s or more!  
-![image](https://user-images.githubusercontent.com/75716744/166147024-26be317f-a98a-423c-bd9f-00ba6581d244.png)
+Optimized Siricoin PC miner reaching 800 KH/s or more!  
+![image](https://user-images.githubusercontent.com/75716744/179065743-5f3c027a-fcd1-47c7-b01c-86b3f188f9c1.png)
+
 
 
 # Setup  
