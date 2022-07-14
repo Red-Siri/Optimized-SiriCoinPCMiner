@@ -5,7 +5,7 @@ from rich import print
 
 
 MainNET = "https://node-1.siricoin.tech:5006"
-JunaidNET = 'http://47.250.59.81:5005'
+JunaidNET = 'https://node-2.siricoin.tech:5006'
 
 configFile = "config.json"
 TimeOUT = 1
@@ -194,3 +194,4 @@ if __name__ == "__main__":
     except requests.ConnectTimeout:
         rgbPrint("All networks are down, quitting the miner, goodbye!", "red")
         sys.exit()
+       
