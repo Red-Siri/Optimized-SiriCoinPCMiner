@@ -4,3 +4,4 @@ pysha3
 requests
 web3
 psutil
+pypresence
