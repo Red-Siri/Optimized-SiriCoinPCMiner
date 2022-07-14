@@ -1,4 +1,4 @@
-import time, json, sha3, sys, os, requests, cpuinfo, platform, psutil
+import time, json, sha3, sys, os, requests, cpuinfo, platform, psutil, pypresence
 from eth_account.messages import encode_defunct
 from web3.auto import w3
 from rich import print
@@ -9,9 +9,9 @@ JunaidNET = 'http://47.250.59.81:5005'
 
 configFile = "config.json"
 TimeOUT = 1
+RpcEnabled = True
 hashes_per_list = 3000
 hashrate_refreshRate = 15 # s
-
 
 
 def rgbPrint(string, color, end="\n"):
@@ -124,6 +124,13 @@ class SiriCoinMiner(object):
         
                 
     def startMining(self):
+        if RpcEnabled:
+            try:
+                rpc = pypresence.Presence("971742749688725524")
+                rpc.connect()
+            except:
+                RpcEnabled = False
+
         self.refresh()
         global first_run, bRoot
         if first_run: rgbPrint(f"Started mining for {self.rewardsRecipient} on {the_node}", "yellow")
@@ -153,6 +160,8 @@ class SiriCoinMiner(object):
                 hashes.clear()
 
             rgbPrint("Last " + str(hashrate_refreshRate) + "s hashrate: " + self.formatHashrate((self.nonce / hashrate_refreshRate)), "yellow")
+            if RpcEnabled:
+                rpc.update(state="Mining siri on " + cpuinfo.get_cpu_info()['brand_raw'] + "!", details="Hashrate: " + self.formatHashrate((self.nonce / hashrate_refreshRate)) + ", Network balance: " + str(requests.get(f"{self.node}/accounts/accountBalance/{self.rewardsRecipient}").json()["result"]["balance"]) + " Siri", large_image="red-siri", small_image="redeye", start=time.time())
 
 
 if __name__ == "__main__":
